@@ -5,14 +5,17 @@ import {Script, console2} from "forge-std/Script.sol";
 import {VmSafe} from "forge-std/Vm.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {ObeliskVaultFactory} from "../src/ObeliskVaultFactory.sol";
+import {OBELISK_VAULT_VERSION} from "../src/interfaces/IObeliskVault.sol";
 import {ISP1Verifier} from "../src/interfaces/ISP1Verifier.sol";
 import {IAgentRegistry} from "../src/interfaces/IAgentRegistry.sol";
 
-/// @notice Deploys a new vault factory for a new policy program, reusing the deployed verifier and registry.
-///         Used when the SP1 program changes (new programVKey) but the contracts do not.
+/// @notice Deploys a new vault factory, reusing the deployed verifier and registry. Used when the SP1 program
+///         changes (new programVKey), or when the vault contract changes and the program does not (SAME_PROGRAM=true,
+///         for example v4 onchain limits).
 /// @dev Env:
 ///   CHAIN_NAME     deployments/<CHAIN_NAME>.json to update (for example robinhood)
-///   PROGRAM_VKEY   the new program's verification key (zk/script: cargo run --release --bin vkey)
+///   PROGRAM_VKEY   the program's verification key (zk/script: cargo run --release --bin vkey)
+///   SAME_PROGRAM   true when only the vault contract changed, so PROGRAM_VKEY may equal the current one
 ///   The broadcaster pays for one contract creation. On a real broadcast the deployment file gets the new
 ///   `factory` and `programVKey`, and the old factory moves to `legacyFactories` so its vaults stay listed.
 contract DeployFactory is Script {
@@ -31,7 +34,9 @@ contract DeployFactory is Script {
         require(registry.code.length > 0, "registry has no code on this chain");
         require(block.chainid == dep.readUint(".chainId"), "wrong chain");
         require(vkey != bytes32(0), "PROGRAM_VKEY is empty");
-        require(vkey != oldVKey, "PROGRAM_VKEY is the program the current factory already uses");
+        if (!vm.envOr("SAME_PROGRAM", false)) {
+            require(vkey != oldVKey, "PROGRAM_VKEY is the program the current factory already uses");
+        }
 
         vm.startBroadcast();
         factory = new ObeliskVaultFactory(ISP1Verifier(verifier), IAgentRegistry(registry), vkey);
@@ -53,5 +58,6 @@ contract DeployFactory is Script {
         vm.writeJson(string.concat("\"", vm.toString(address(factory)), "\""), path, ".factory");
         vm.writeJson(string.concat("\"", vm.toString(vkey), "\""), path, ".programVKey");
         vm.writeJson(list, path, ".legacyFactories");
+        vm.writeJson(vm.toString(uint256(OBELISK_VAULT_VERSION)), path, ".vaultVersion");
     }
 }

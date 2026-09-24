@@ -4,7 +4,7 @@ pragma solidity 0.8.28;
 import {Test} from "forge-std/Test.sol";
 import {stdJson} from "forge-std/StdJson.sol";
 import {ObeliskVault} from "../src/ObeliskVault.sol";
-import {Intent, PolicyOutput} from "../src/interfaces/IObeliskVault.sol";
+import {Intent, PolicyOutput, Limits} from "../src/interfaces/IObeliskVault.sol";
 
 /// @notice Checks that the Solidity encoding matches zk/lib (Rust) through vectors.json.
 contract VectorsTest is Test {
@@ -19,7 +19,12 @@ contract VectorsTest is Test {
     function test_IntentHashMatchesRust() public {
         vm.chainId(json.readUint(".input.chainId"));
         address vaultAddr = json.readAddress(".input.vault");
-        deployCodeTo("ObeliskVault.sol:ObeliskVault", abi.encode(address(1), address(2), address(3), bytes32(0), bytes32(0), address(0)), vaultAddr);
+        Limits memory none = Limits(address(0), 0, 0, new address[](0), new address[](0));
+        deployCodeTo(
+            "ObeliskVault.sol:ObeliskVault",
+            abi.encode(address(1), address(2), address(3), bytes32(0), bytes32(0), none, address(0)),
+            vaultAddr
+        );
 
         Intent memory i = Intent({
             target: json.readAddress(".input.intent.target"),

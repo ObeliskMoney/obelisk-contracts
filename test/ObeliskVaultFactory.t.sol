@@ -19,7 +19,7 @@ contract ObeliskVaultFactoryTest is Base {
         vm.expectEmit(true, false, false, false, address(factory));
         emit ObeliskVaultFactory.VaultCreated(alice, address(0), POLICY, agent);
         vm.prank(alice);
-        ObeliskVault v = ObeliskVault(payable(factory.createVault(POLICY, agent)));
+        ObeliskVault v = ObeliskVault(payable(factory.createVault(POLICY, agent, _limits())));
 
         assertEq(v.owner(), alice);
         assertEq(v.policyHash(), POLICY);
@@ -32,7 +32,7 @@ contract ObeliskVaultFactoryTest is Base {
 
     function test_VaultFromFactoryExecutes() public {
         vm.prank(alice);
-        ObeliskVault v = ObeliskVault(payable(factory.createVault(POLICY, agent)));
+        ObeliskVault v = ObeliskVault(payable(factory.createVault(POLICY, agent, _limits())));
         usdc.mint(address(v), 100e6);
 
         Intent memory i = Intent({
@@ -50,7 +50,7 @@ contract ObeliskVaultFactoryTest is Base {
 
     function test_VaultWithoutAgentOrPolicy() public {
         vm.prank(alice);
-        ObeliskVault v = ObeliskVault(payable(factory.createVault(bytes32(0), address(0))));
+        ObeliskVault v = ObeliskVault(payable(factory.createVault(bytes32(0), address(0), _limits())));
         assertEq(v.policyHash(), bytes32(0));
         assertFalse(v.agentAllowed(agent));
     }

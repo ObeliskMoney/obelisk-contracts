@@ -29,7 +29,7 @@ contract ObeliskVaultTest is Base {
     }
 
     function test_DailyLimitResetsNextDay() public {
-        _exec(_approveIntent(type(uint256).max, 1), 0);
+        _exec(_approveIntent(LIMIT_PER_DAY, 1), 0);
         _exec(_swapIntent(100 * USDC_UNIT, 2), 100 * USDC_UNIT);
         uint64 d0 = _today();
         vm.warp(block.timestamp + 1 days);
@@ -43,7 +43,7 @@ contract ObeliskVaultTest is Base {
 
     function test_RevertWhen_PolicyNotSet() public {
         vm.prank(owner);
-        vault.setPolicy(bytes32(0), VKEY);
+        vault.setRules(bytes32(0), VKEY, _limits());
         Intent memory i = _approveIntent(1, 1);
         bytes memory sig = _sign(agentPk, i);
         vm.expectRevert(ObeliskVault.PolicyNotSet.selector);
@@ -78,7 +78,7 @@ contract ObeliskVaultTest is Base {
     }
 
     function test_RevertWhen_SelfCall() public {
-        Intent memory i = _intent(address(vault), abi.encodeCall(vault.setPolicy, (bytes32(uint256(1)), VKEY)), 1);
+        Intent memory i = _intent(address(vault), abi.encodeCall(vault.setAgent, (attacker, true)), 1);
         bytes memory sig = _sign(agentPk, i);
         bytes memory pv = _pv(i, 0);
         vm.expectRevert(ObeliskVault.SelfCall.selector);
@@ -174,7 +174,7 @@ contract ObeliskVaultTest is Base {
 
     /// A proof that claims a smaller spentBefore than the onchain record is refused.
     function test_RevertWhen_SpentBeforeUnderstated() public {
-        _exec(_approveIntent(type(uint256).max, 1), 0);
+        _exec(_approveIntent(LIMIT_PER_DAY, 1), 0);
         _exec(_swapIntent(100 * USDC_UNIT, 2), 100 * USDC_UNIT);
         Intent memory i = _swapIntent(100 * USDC_UNIT, 3);
         bytes memory sig = _sign(agentPk, i);
@@ -184,7 +184,7 @@ contract ObeliskVaultTest is Base {
     }
 
     function test_RevertWhen_SpentDecreases() public {
-        _exec(_approveIntent(type(uint256).max, 1), 0);
+        _exec(_approveIntent(LIMIT_PER_DAY, 1), 0);
         _exec(_swapIntent(100 * USDC_UNIT, 2), 100 * USDC_UNIT);
         Intent memory i = _approveIntent(1, 3);
         bytes memory sig = _sign(agentPk, i);
@@ -206,7 +206,7 @@ contract ObeliskVaultTest is Base {
 
     /// A signature for another vault cannot be used on this vault.
     function test_RevertWhen_SignatureForOtherVault() public {
-        ObeliskVault other = new ObeliskVault(owner, verifier, registry, POLICY, VKEY, agent);
+        ObeliskVault other = new ObeliskVault(owner, verifier, registry, POLICY, VKEY, _limits(), agent);
         Intent memory i = _approveIntent(1, 1);
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(agentPk, other.typedIntentDigest(i));
         bytes memory pv = _pv(i, 0);
@@ -232,7 +232,7 @@ contract ObeliskVaultTest is Base {
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, attacker));
         vault.withdraw(address(usdc), attacker, 1);
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, attacker));
-        vault.setPolicy(bytes32(0), bytes32(0));
+        vault.setRules(bytes32(0), bytes32(0), _limits());
         vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, attacker));
         vault.setAgent(attacker, true);
         vm.stopPrank();

@@ -4,6 +4,7 @@ pragma solidity 0.8.28;
 import {ObeliskVault} from "./ObeliskVault.sol";
 import {ISP1Verifier} from "./interfaces/ISP1Verifier.sol";
 import {IAgentRegistry} from "./interfaces/IAgentRegistry.sol";
+import {Limits} from "./interfaces/IObeliskVault.sol";
 
 /// @title ObeliskVaultFactory
 /// @notice Anyone can create their own vault with the policy of their choice.
@@ -26,8 +27,9 @@ contract ObeliskVaultFactory {
 
     /// @param policyHash policy hash (docs/spec.md §2); the policy JSON is registered with the agent API.
     /// @param agent agent allowed right away (may be address(0) and set later).
-    function createVault(bytes32 policyHash, address agent) external returns (address vault) {
-        vault = address(new ObeliskVault(msg.sender, verifier, registry, policyHash, programVKey, agent));
+    /// @param limits onchain limits matching the policy (ignored when policyHash is zero).
+    function createVault(bytes32 policyHash, address agent, Limits calldata limits) external returns (address vault) {
+        vault = address(new ObeliskVault(msg.sender, verifier, registry, policyHash, programVKey, limits, agent));
         allVaults.push(vault);
         _vaultsOf[msg.sender].push(vault);
         emit VaultCreated(msg.sender, vault, policyHash, agent);

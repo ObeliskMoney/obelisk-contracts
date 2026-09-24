@@ -9,17 +9,21 @@ import {MockERC20} from "../../src/mocks/MockERC20.sol";
 import {MockSwapRouter} from "../../src/mocks/MockSwapRouter.sol";
 import {ISP1Verifier} from "../../src/interfaces/ISP1Verifier.sol";
 import {IAgentRegistry} from "../../src/interfaces/IAgentRegistry.sol";
-import {Intent, PolicyOutput} from "../../src/interfaces/IObeliskVault.sol";
+import {Intent, PolicyOutput, Limits} from "../../src/interfaces/IObeliskVault.sol";
 
 abstract contract Base is Test {
     bytes32 constant POLICY = keccak256("policy-v1");
     bytes32 constant VKEY = keccak256("vkey");
     bytes32 constant MEASUREMENT = keccak256("agent-image-v1");
     uint256 constant USDC_UNIT = 1e6;
+    /// Onchain limits of the test vault (the policy behind POLICY uses the same numbers).
+    uint256 constant LIMIT_PER_TX = 100e6;
+    uint256 constant LIMIT_PER_DAY = 300e6;
 
     address owner = makeAddr("owner");
     address executor = makeAddr("executor");
     address attacker = makeAddr("attacker");
+    address payee = makeAddr("payee");
     uint256 agentPk;
     address agent;
 
@@ -36,12 +40,12 @@ abstract contract Base is Test {
 
         verifier = new MockVerifier();
         registry = new AgentRegistry(owner);
-        vault = new ObeliskVault(
-            owner, ISP1Verifier(address(verifier)), IAgentRegistry(address(registry)), POLICY, VKEY, agent
-        );
         usdc = new MockERC20("USD Coin", "USDC", 6);
         weth = new MockERC20("Wrapped Ether", "WETH", 18);
         router = new MockSwapRouter(1e18, 4000e6); // 1 ETH = 4000 USDC
+        vault = new ObeliskVault(
+            owner, ISP1Verifier(address(verifier)), IAgentRegistry(address(registry)), POLICY, VKEY, _limits(), agent
+        );
 
         vm.prank(owner);
         registry.registerAgent(agent, MEASUREMENT);
@@ -53,6 +57,14 @@ abstract contract Base is Test {
 
     function _today() internal view returns (uint64) {
         return uint64(block.timestamp / 1 days);
+    }
+
+    function _limits() internal view returns (Limits memory l) {
+        address[] memory routers = new address[](1);
+        routers[0] = address(router);
+        address[] memory payees = new address[](1);
+        payees[0] = payee;
+        l = Limits(address(usdc), LIMIT_PER_TX, LIMIT_PER_DAY, routers, payees);
     }
 
     function _intent(address target, bytes memory data, uint256 nonce) internal view returns (Intent memory) {

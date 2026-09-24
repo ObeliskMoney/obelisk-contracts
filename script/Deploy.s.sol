@@ -13,6 +13,7 @@ import {ISP1Verifier} from "../src/interfaces/ISP1Verifier.sol";
 import {SP1Verifier as SP1VerifierV600} from "../src/sp1/v6.0.0/SP1VerifierGroth16.sol";
 import {SP1Verifier as SP1VerifierV610} from "../src/sp1/v6.1.0/SP1VerifierGroth16.sol";
 import {IAgentRegistry} from "../src/interfaces/IAgentRegistry.sol";
+import {Limits} from "../src/interfaces/IObeliskVault.sol";
 
 /// @notice Deploy Obelisk. Two modes:
 ///   - dev/testnet: mock token and router (MockERC20, MockSwapRouter) are deployed too;
@@ -88,7 +89,15 @@ contract Deploy is Script {
         require(minOutPerIn > 0, "MIN_OUT_PER_IN must be above zero");
         policyHash = _policyHash();
         // Demo vault owned by the deployer; the agent can be allowed later with setAgent.
-        vault = ObeliskVault(payable(factory.createVault(policyHash, vm.envOr("AGENT_ADDRESS", address(0)))));
+        vault = ObeliskVault(
+            payable(
+                factory.createVault(
+                    policyHash,
+                    vm.envOr("AGENT_ADDRESS", address(0)),
+                    Limits(usdc, MAX_PER_TX, MAX_PER_DAY, _targets(), new address[](0))
+                )
+            )
+        );
         if (!realAssets) MockERC20(usdc).mint(address(vault), vm.envOr("VAULT_USDC", uint256(500e6)));
         vm.stopBroadcast();
 
@@ -169,6 +178,7 @@ contract Deploy is Script {
         o.serialize("vault", address(vault));
         o.serialize("registry", address(registry));
         o.serialize("factory", address(factory));
+        o.serialize("vaultVersion", uint256(vault.VERSION()));
         o.serialize("verifier", verifier);
         o.serialize("verifierKind", isMock ? string("mock") : string("sp1-groth16"));
         o.serialize("usdc", usdc);
