@@ -28,6 +28,7 @@ import {IAgentRegistry} from "../src/interfaces/IAgentRegistry.sol";
 ///   VAULT_USDC             mock USDC minted to the demo vault (default 500 USDC, mock mode only)
 ///   TOKEN, WETH, ROUTER    real assets: the limited stablecoin, WETH, Uniswap SwapRouter02
 ///   QUOTER, TOKEN_SYMBOL, SWAP_FEE   Uniswap QuoterV2, token symbol (for example USDG), pool fee tier (for example 100)
+///   MIN_OUT_PER_IN   policy v3 price floor: least WETH wei per token unit, times 1e18 (required with real assets; mock default 1e26, ETH at most 10,000)
 contract Deploy is Script {
     using stdJson for string;
 
@@ -45,6 +46,7 @@ contract Deploy is Script {
     address quoter;
     string symbol;
     uint24 swapFee;
+    uint256 minOutPerIn;
     bool realAssets;
     bytes32 policyHash;
     bytes32 vkey;
@@ -81,6 +83,9 @@ contract Deploy is Script {
             symbol = "USDC";
             swapFee = 500;
         }
+        // Real assets need an explicit floor: a loose default would leave most of a swap open to a bad price.
+        minOutPerIn = realAssets ? vm.envUint("MIN_OUT_PER_IN") : vm.envOr("MIN_OUT_PER_IN", uint256(1e26));
+        require(minOutPerIn > 0, "MIN_OUT_PER_IN must be above zero");
         policyHash = _policyHash();
         // Demo vault owned by the deployer; the agent can be allowed later with setAgent.
         vault = ObeliskVault(payable(factory.createVault(policyHash, vm.envOr("AGENT_ADDRESS", address(0)))));
@@ -100,6 +105,16 @@ contract Deploy is Script {
         t[0] = weth;
     }
 
+    function _fees() internal view returns (uint24[] memory f) {
+        f = new uint24[](1);
+        f[0] = swapFee;
+    }
+
+    function _floors() internal view returns (uint256[] memory m) {
+        m = new uint256[](1);
+        m[0] = minOutPerIn;
+    }
+
     function _selectors() internal pure returns (bytes4[] memory s) {
         s = new bytes4[](2);
         s[0] = 0x095ea7b3; // approve
@@ -109,14 +124,24 @@ contract Deploy is Script {
     function _policyHash() internal view returns (bytes32) {
         return keccak256(
             abi.encode(
-                uint8(2), usdc, MAX_PER_TX, MAX_PER_DAY, _targets(), new address[](0), _selectors(), true, _tokensOut()
+                uint8(3),
+                usdc,
+                MAX_PER_TX,
+                MAX_PER_DAY,
+                _targets(),
+                new address[](0),
+                _selectors(),
+                true,
+                _tokensOut(),
+                _fees(),
+                _floors()
             )
         );
     }
 
     function _policyJson() internal returns (string memory) {
         string memory p = "policy";
-        p.serialize("version", uint256(2));
+        p.serialize("version", uint256(3));
         p.serialize("token", usdc);
         p.serialize("maxPerTx", vm.toString(MAX_PER_TX));
         p.serialize("maxPerDay", vm.toString(MAX_PER_DAY));
@@ -127,7 +152,13 @@ contract Deploy is Script {
         sel[1] = "0x04e45aaf";
         p.serialize("allowedSelectors", sel);
         p.serialize("denyUnlimitedApprove", true);
-        return p.serialize("allowedTokensOut", _tokensOut());
+        p.serialize("allowedTokensOut", _tokensOut());
+        uint256[] memory fees = new uint256[](1);
+        fees[0] = swapFee;
+        p.serialize("allowedFees", fees);
+        string[] memory floors = new string[](1);
+        floors[0] = vm.toString(minOutPerIn);
+        return p.serialize("minOutPerIn", floors);
     }
 
     /// Write deployments/<chain>.json (read by the agent and executor).

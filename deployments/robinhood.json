@@ -1,6 +1,6 @@
 {
   "chainId": 4663,
-  "factory": "0xadDe5A5cF722Ef1e6a55fB15d84Fd4A9a71a2429",
+  "factory": "0x4530A51f8efB1A3Fc3d57e14db1965A1038Bb15c",
   "mockAssets": false,
   "policy": {
     "allowedRecipients": [],
@@ -21,7 +21,7 @@
     "version": 2
   },
   "policyHash": "0x0c7313c53c15fa533517d67f071a2fa89f63b3c0acecc5e537f7b69003a9247d",
-  "programVKey": "0x005837e0791c16ed77947585ad983c678684500b27c6ff2ea54b700637f929bb",
+  "programVKey": "0x002c72fab9e46ad169621189cf082ed7a585af657aa44c4ef657d3d0621c53bd",
   "quoter": "0x33e885eD0Ec9bF04EcfB19341582aADCb4c8A9E7",
   "registry": "0xd79210b37c548584f87d66B07C8296db75678FE8",
   "router": "0xCaf681a66D020601342297493863E78C959E5cb2",
@@ -32,5 +32,8 @@
   "vault": "0xc5a5f0af3D829Cd7198648008f617f1a4F281f02",
   "verifier": "0x735A8EbC91e7ccC02A7275e13F4e02eab93cB5CA",
   "verifierKind": "sp1-groth16",
-  "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73"
+  "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
+  "legacyFactories": [
+    "0xadDe5A5cF722Ef1e6a55fB15d84Fd4A9a71a2429"
+  ]
 }

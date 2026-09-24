@@ -42,7 +42,9 @@ contract VectorsTest is Test {
                 json.readAddressArray(".input.policy.allowedRecipients"),
                 _bytes4Array(json.readUintArray(".input.policy.allowedSelectors")),
                 json.readBool(".input.policy.denyUnlimitedApprove"),
-                json.readAddressArray(".input.policy.allowedTokensOut")
+                json.readAddressArray(".input.policy.allowedTokensOut"),
+                _uint24Array(json.readUintArray(".input.policy.allowedFees")),
+                json.readUintArray(".input.policy.minOutPerIn")
             )
         );
         assertEq(h, json.readBytes32(".policyHash"));
@@ -55,6 +57,11 @@ contract VectorsTest is Test {
         assertEq(o.spentBefore, 100e6);
         assertEq(o.spentAfter, 150e6);
         assertEq(o.day, json.readUint(".input.day"));
+    }
+
+    function _uint24Array(uint256[] memory a) internal pure returns (uint24[] memory r) {
+        r = new uint24[](a.length);
+        for (uint256 k; k < a.length; k++) r[k] = uint24(a[k]);
     }
 
     function _bytes4Array(uint256[] memory a) internal pure returns (bytes4[] memory r) {

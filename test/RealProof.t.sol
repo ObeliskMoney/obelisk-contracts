@@ -31,6 +31,13 @@ contract RealProofTest is Test {
         assertEq(o.spentAfter, 150e6);
     }
 
+    /// The fixture must come from the program that mainnet vaults accept, otherwise this suite only proves
+    /// that some older program verifies. Regenerate the fixture after every ELF change.
+    function test_FixtureIsForDeployedProgram() public view {
+        string memory d = vm.readFile("deployments/robinhood.json");
+        assertEq(vkey, d.readBytes32(".programVKey"), "fixture vkey differs from the deployed programVKey");
+    }
+
     function test_RevertWhen_PublicValuesTampered() public {
         PolicyOutput memory o = abi.decode(publicValues, (PolicyOutput));
         o.spentAfter = 100e6; // the attacker tries to "hide" spending
