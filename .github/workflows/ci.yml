@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+      - name: Test (unit, fuzz, invariant, vectors, real proof)
+        run: forge test -vv
+      - name: Coverage
+        run: forge coverage --report summary --no-match-coverage "(test|mocks|script)"

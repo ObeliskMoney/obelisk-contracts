@@ -1,0 +1,36 @@
+{
+  "chainId": 46630,
+  "factory": "0x73A3c9ae5F4b714aEcddc75b68042199B387f305",
+  "mockAssets": true,
+  "policy": {
+    "allowedRecipients": [],
+    "allowedSelectors": [
+      "0x095ea7b3",
+      "0x04e45aaf"
+    ],
+    "allowedTargets": [
+      "0xB8E15D1E9E8740D9B66CBAfDf9Edd648E4f14946"
+    ],
+    "allowedTokensOut": [
+      "0x773a4da7554038C38FCddAeA7A3253fF7d69c3A3"
+    ],
+    "denyUnlimitedApprove": true,
+    "maxPerDay": "300000000",
+    "maxPerTx": "100000000",
+    "token": "0x7CD62C108Dc8781239aFEB0a8cB7E7d8590Ed2D9",
+    "version": 2
+  },
+  "policyHash": "0x5dc0ca2723b3937627eb59d0f49ce86531289ced921757c74ef01084d9d237b0",
+  "programVKey": "0x005837e0791c16ed77947585ad983c678684500b27c6ff2ea54b700637f929bb",
+  "quoter": "0x0000000000000000000000000000000000000000",
+  "registry": "0x4eC9F6A6C19DC28F31817f1462f0c5C1e6587A9f",
+  "router": "0xB8E15D1E9E8740D9B66CBAfDf9Edd648E4f14946",
+  "startBlock": 11764478,
+  "swapFee": 500,
+  "tokenSymbol": "USDC",
+  "usdc": "0x7CD62C108Dc8781239aFEB0a8cB7E7d8590Ed2D9",
+  "vault": "0xf269df99163910074F9529115e4b5E7e1BA6520C",
+  "verifier": "0x6d2860eC97887DbF6821956C12447688332E388B",
+  "verifierKind": "sp1-groth16",
+  "weth": "0x773a4da7554038C38FCddAeA7A3253fF7d69c3A3"
+}

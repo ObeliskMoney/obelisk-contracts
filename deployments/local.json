@@ -1,0 +1,29 @@
+{
+  "chainId": 31337,
+  "factory": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+  "policy": {
+    "allowedRecipients": [],
+    "allowedSelectors": [
+      "0x095ea7b3",
+      "0x04e45aaf"
+    ],
+    "allowedTargets": [
+      "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707"
+    ],
+    "denyUnlimitedApprove": true,
+    "maxPerDay": "300000000",
+    "maxPerTx": "100000000",
+    "token": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+    "version": 1
+  },
+  "policyHash": "0x4dbd2bbd6611d4ec08b3b5922c47fcc20fb335654ed33c72fb25fa8ec2cf5189",
+  "programVKey": "0x00365210c55ac6a083e8511a419afd9ac525ba13f92c03f412772440b2fa070c",
+  "registry": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+  "router": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+  "startBlock": 0,
+  "usdc": "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+  "vault": "0x75537828f2ce51be7289709686A69CbFDbB714F1",
+  "verifier": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  "verifierKind": "mock",
+  "weth": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+}

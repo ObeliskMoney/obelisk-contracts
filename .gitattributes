@@ -1,0 +1,8 @@
+# Third-party and generated code: keep it out of GitHub's language statistics.
+lib/** linguist-vendored
+src/sp1/v6.0.0/** linguist-vendored
+src/sp1/v6.1.0/** linguist-vendored
+src/sp1/ISP1Verifier.sol linguist-vendored
+test/fixtures/** linguist-generated
+deployments/** linguist-generated
+broadcast/** linguist-generated
